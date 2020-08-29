@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="BranchesTreeState">
+    <expand>
+      <path>
+        <item name="ROOT" type="e8cecc67:BranchNodeDescriptor" />
+        <item name="LOCAL_ROOT" type="e8cecc67:BranchNodeDescriptor" />
+      </path>
+    </expand>
+    <select />
+  </component>
+  <component name="CargoProjects">
+    <cargoProject FILE="$PROJECT_DIR$/Cargo.toml" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="21fb7c91-4d52-4222-9392-7190ee83d528" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/mqtt.iml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.ipynb_checkpoints/Untitled-checkpoint.ipynb" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Untitled.ipynb" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/.protocol.rs.swp" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/lib.rs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/pack.rs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/protocol.rs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/protocol_util.rs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/test.rs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/test_data/bad_connect" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/test_data/clean_connect" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/test_data/clean_publish" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/test_data/connect_not_cid" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/test_data/connect_user_and_password" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/test_data/disconnect" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/test_data/multi_subscribe" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/test_data/multi_unsubscribe" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/test_data/pingreq" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/test_data/pingresp" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/test_data/puback" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/test_data/pubcomp" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/test_data/publish_qos2" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/test_data/publish_qos_retain" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/test_data/pubrec" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/test_data/pubrel" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/test_data/subscribe" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Rust File" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="MacroExpansionManager">
+    <option name="directoryName" value="2djajpzv" />
+  </component>
+  <component name="ProjectId" id="1gahm62Lpotk71fwDIn4vFgY39a" />
+  <component name="ProjectLevelVcsManager">
+    <ConfirmationsSetting value="2" id="Add" />
+  </component>
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">
+    <property name="ASKED_ADD_EXTERNAL_FILES" value="true" />
+    <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
+    <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
+    <property name="org.rust.cargo.project.model.PROJECT_DISCOVERY" value="true" />
+  </component>
+  <component name="RustProjectSettings">
+    <option name="toolchainHomeDirectory" value="$USER_HOME$/.cargo/bin" />
+  </component>
+  <component name="SvnConfiguration">
+    <configuration />
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="21fb7c91-4d52-4222-9392-7190ee83d528" name="Default Changelist" comment="" />
+      <created>1598358767979</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1598358767979</updated>
+    </task>
+    <servers />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+    <option name="oldMeFiltersMigrated" value="true" />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
+  </component>
+  <component name="WindowStateProjectService">
+    <state x="444" y="108" key="#com.intellij.execution.impl.EditConfigurationsDialog" timestamp="1598359022465">
+      <screen x="75" y="46" width="1845" height="1034" />
+    </state>
+    <state x="444" y="108" key="#com.intellij.execution.impl.EditConfigurationsDialog/75.46.1845.1034@75.46.1845.1034" timestamp="1598359022465" />
+  </component>
+</project>
