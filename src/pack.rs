@@ -25,7 +25,11 @@ pub fn unpack_u32(buf: &Vec<u8>, pbuf: &mut usize) -> Result<u32, Box<dyn Error>
     Ok((val1 as u32) << 16 | val2 as u32)
 }
 
-fn unpack_bytes(buf: &Vec<u8>, pbuf: &mut usize, size: usize) -> Result<String, Box<dyn Error>> {
+pub fn unpack_bytes(
+    buf: &Vec<u8>,
+    pbuf: &mut usize,
+    size: usize,
+) -> Result<String, Box<dyn Error>> {
     // think for future how we want it maybe not String
     let bytes = buf.get(*pbuf..*pbuf + size);
     match bytes {
@@ -33,6 +37,17 @@ fn unpack_bytes(buf: &Vec<u8>, pbuf: &mut usize, size: usize) -> Result<String, 
             let st = String::from_utf8(val.to_vec())?.to_string();
             *pbuf += size;
             return Ok(st);
+        }
+        None => return Err(format!("Index error to vec {} to {} ", *pbuf, *pbuf + size).into()),
+    }
+}
+
+pub fn unpack_vec(buf: &Vec<u8>, pbuf: &mut usize, size: usize) -> Result<Vec<u8>, Box<dyn Error>> {
+    let bytes = buf.get(*pbuf..*pbuf + size);
+    match bytes {
+        Some(val) => {
+            *pbuf += size;
+            return Ok(val.to_vec());
         }
         None => return Err(format!("Index error to vec {} to {} ", *pbuf, *pbuf + size).into()),
     }

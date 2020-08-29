@@ -42,9 +42,9 @@ impl QosLevel {
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct HeaderFlags {
-    retain: bool,
-    qos: QosLevel,
-    dup: bool,
+    pub retain: bool,
+    pub qos: QosLevel,
+    pub dup: bool,
 }
 
 impl HeaderFlags {
@@ -74,4 +74,42 @@ pub fn valid_all_data_parsed(buf: &Vec<u8>, pbuf: &mut usize) -> Result<(), Box<
         return Err("Buffer has more data than parsed".into());
     }
     Ok(())
+}
+
+pub fn encode_length(buf: &mut Vec<u8>, length: u32) -> u8 {
+    if length > 0xffffff7 {
+        panic!("the pack is bigger than 256MB encode length failed");
+    }
+    let mut bytes = 0;
+    let mut len = length;
+    loop {
+        if bytes + 1 > MAX_LEN_BYTES_REMAINING_LENGTH {
+            return bytes;
+        }
+        let mut d: u8 = (len % 128) as u8;
+        len /= 128;
+        if len > 0 {
+            d |= 128;
+        }
+        bytes += 1;
+        buf[bytes as usize] = d;
+        if len == 0 {
+            return bytes;
+        }
+    }
+}
+
+pub fn decode_length(buf: &Vec<u8>, pbuf: &mut usize) -> u32 {
+    let mut c;
+    let mut multiplier = 1;
+    let mut value: u32 = 0;
+    loop {
+        c = buf[*pbuf];
+        value += (c & 127) as u32 * multiplier;
+        *pbuf += 1;
+        multiplier *= 128;
+        if c & 128 == 0 {
+            return value;
+        }
+    }
 }

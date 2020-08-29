@@ -1,12 +1,13 @@
 #![allow(dead_code, unused_variables, non_snake_case)] //this line must delete on prd use crate::pack::*;
 use crate::pack::*;
 use crate::protocol_util::*;
+use log::*;
 use std::error::Error;
 
 #[derive(Debug, PartialEq, Clone)]
 pub enum Packet {
     Connect(Connect),
-    Connnack(Connack),
+    Connack(Connack),
     Publish(Publish),
     Puback(Puback),
     Pubrec(Pubrec),
@@ -24,7 +25,12 @@ pub enum Packet {
 
 trait Message {
     // class method read message to packet type
-    fn parse(buf: &Vec<u8>, header_flags: HeaderFlags) -> Result<Box<Self>, Box<dyn Error>>;
+    fn parse(
+        buf: &Vec<u8>,
+        header_flags: HeaderFlags,
+        pbuf: &mut usize,
+        length: u32,
+    ) -> Result<Box<Self>, Box<dyn Error>>;
 
     fn send_bytes(&self) -> Vec<u8>;
 }
@@ -34,10 +40,29 @@ pub mod protocol {
     use std::error::Error;
 
     pub fn parse_packet(buf: &Vec<u8>) -> Result<Packet, Box<dyn Error>> {
-        let (packet_type, header_flags) = split_to_message_type_and_header_flags(buf[0])?;
+        let mut pbuf = 0;
+        let (packet_type, header_flags) = split_to_message_type_and_header_flags(buf[pbuf])?;
+        pbuf += 1;
+        let remaining_length = decode_length(buf, &mut pbuf);
         let packet = match packet_type {
-            CONNECT_BYTE => Ok(Packet::Connect(*Connect::parse(buf, header_flags)?)),
-            CONNACK_BYTE => Ok(Packet::Connack(*Connack::parse(buf, header_flags)?)),
+            CONNECT_BYTE => Ok(Packet::Connect(*Connect::parse(
+                buf,
+                header_flags,
+                &mut pbuf,
+                remaining_length,
+            )?)),
+            CONNACK_BYTE => Ok(Packet::Connack(*Connack::parse(
+                buf,
+                header_flags,
+                &mut pbuf,
+                remaining_length,
+            )?)),
+            PUBLISH_BYTE => Ok(Packet::Publish(*Publish::parse(
+                buf,
+                header_flags,
+                &mut pbuf,
+                remaining_length,
+            )?)),
             _ => return Err(format!("message type unsupported - 0X{:x}", packet_type).into()),
         };
         packet
@@ -174,9 +199,14 @@ impl Connect {
 }
 
 impl Message for Connect {
-    fn parse(buf: &Vec<u8>, header_flags: HeaderFlags) -> Result<Box<Self>, Box<dyn Error>> {
-        let mut start_pos = 8;
-        return Ok(Box::new(Self::unpack(buf, &mut start_pos, header_flags)?));
+    fn parse(
+        buf: &Vec<u8>,
+        header_flags: HeaderFlags,
+        pbuf: &mut usize,
+        length: u32,
+    ) -> Result<Box<Self>, Box<dyn Error>> {
+        *pbuf = 8;
+        return Ok(Box::new(Self::unpack(buf, pbuf, header_flags)?));
     }
 
     fn send_bytes(&self) -> Vec<u8> {
@@ -188,11 +218,11 @@ impl Message for Connect {
 pub struct Connack {
     headerflags: HeaderFlags,
     sp: bool,
-    rc: u16,
+    rc: u8,
 }
 
 impl Connack {
-    fn new(headerflags: HeaderFlags, sp: bool, rc: u16) -> Self {
+    fn new(headerflags: HeaderFlags, sp: bool, rc: u8) -> Self {
         Self {
             headerflags,
             sp,
@@ -200,19 +230,33 @@ impl Connack {
         }
     }
 
+    fn extract_sp(byte: u8) -> bool {
+        // sp is the third byte in packet and contain in the MSB bool value of session present
+        // all the other bits are reserverd for future
+        unpack_byte(byte)[0]
+    }
+
     fn unpack(
         buf: &Vec<u8>,
         pbuf: &mut usize,
         headerflags: HeaderFlags,
     ) -> Result<Self, Box<dyn Error>> {
-        todo!();
+        let sp = unpack_u8(buf, pbuf)?;
+        let rc = unpack_u8(buf, pbuf)?;
+        valid_all_data_parsed(buf, pbuf)?;
+        Ok(Self::new(headerflags, Self::extract_sp(sp), rc))
     }
 }
 
 impl Message for Connack {
-    fn parse(buf: &Vec<u8>, header_flags: HeaderFlags) -> Result<Box<Self>, Box<dyn Error>> {
-        let start_pos = 1;
-        return Ok(Box::new(Self::unpack(buf, &mut start_pos, header_flags)?));
+    fn parse(
+        buf: &Vec<u8>,
+        header_flags: HeaderFlags,
+        pbuf: &mut usize,
+        length: u32,
+    ) -> Result<Box<Self>, Box<dyn Error>> {
+        *pbuf = 2;
+        return Ok(Box::new(Self::unpack(buf, pbuf, header_flags)?));
     }
 
     fn send_bytes(&self) -> Vec<u8> {
@@ -221,10 +265,61 @@ impl Message for Connack {
 }
 
 #[derive(Debug, PartialEq, Clone)]
-pub struct Publish {}
+pub struct Publish {
+    header_flags: HeaderFlags,
+    pkt_id: Option<u16>,
+    topic: String,
+    payload: Vec<u8>,
+}
 
 impl Publish {
-    fn new() {
+    fn new(
+        header_flags: HeaderFlags,
+        pkt_id: Option<u16>,
+        topic: String,
+        payload: Vec<u8>,
+    ) -> Self {
+        Self {
+            header_flags,
+            pkt_id,
+            topic,
+            payload,
+        }
+    }
+
+    fn unpack(
+        buf: &Vec<u8>,
+        pbuf: &mut usize,
+        headerflags: HeaderFlags,
+        length: u32,
+    ) -> Result<Self, Box<dyn Error>> {
+        let topic = unpack_string(buf, pbuf)?;
+        let mut message_len = length - topic.len() as u32 - 2;
+
+        let mut pkd_id = Option::None;
+        let qos = headerflags.qos.clone();
+        if qos as u8 > QosLevel::AtMostOnce as u8 {
+            pkd_id = Option::Some(unpack_u16(buf, pbuf)?);
+            message_len -= 2;
+        }
+        let message = unpack_vec(buf, pbuf, message_len as usize)?;
+        valid_all_data_parsed(buf, pbuf)?;
+        Ok(Self::new(headerflags, pkd_id, topic, message))
+    }
+}
+
+impl Message for Publish {
+    fn parse(
+        buf: &Vec<u8>,
+        header_flags: HeaderFlags,
+        pbuf: &mut usize,
+        length: u32,
+    ) -> Result<Box<Self>, Box<dyn Error>> {
+        info!("adar");
+        return Ok(Box::new(Self::unpack(buf, pbuf, header_flags, length)?));
+    }
+
+    fn send_bytes(&self) -> Vec<u8> {
         todo!();
     }
 }
@@ -390,5 +485,37 @@ mod tests {
         let mut buf: Vec<u8> = Vec::new();
         f.read_to_end(&mut buf).unwrap();
         assert!(parse_packet(&buf).is_err());
+    }
+
+    #[test]
+    fn test_parse_connack() {
+        let mut f = fs::File::open("./test_data/connack").unwrap();
+        let mut buf: Vec<u8> = Vec::new();
+        f.read_to_end(&mut buf).unwrap();
+        let p = parse_packet(&buf).unwrap();
+    }
+
+    #[test]
+    fn test_parse_publish() {
+        let mut f = fs::File::open("./test_data/clean_publish").unwrap();
+        let mut buf: Vec<u8> = Vec::new();
+        f.read_to_end(&mut buf).unwrap();
+        let l = parse_packet(&buf).unwrap();
+    }
+
+    #[test]
+    fn test_parse_qos2_publish() {
+        let mut f = fs::File::open("./test_data/publish_qos2").unwrap();
+        let mut buf: Vec<u8> = Vec::new();
+        f.read_to_end(&mut buf).unwrap();
+        let l = parse_packet(&buf).unwrap();
+    }
+
+    #[test]
+    fn test_parse_qos_retain_publish() {
+        let mut f = fs::File::open("./test_data/publish_qos_retain").unwrap();
+        let mut buf: Vec<u8> = Vec::new();
+        f.read_to_end(&mut buf).unwrap();
+        let l = parse_packet(&buf).unwrap();
     }
 }
